@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.1.6", features = ["derive"] }
-lunir-luau = { path = "../lunir-luau-cli" }
+lunir-luau = { path = "../lunir-luau" }
