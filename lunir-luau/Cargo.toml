@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 lunir = "0.2.0"
 num_enum = "0.5.11"
+itertools = "0.10.5"
+derive_builder = "0.12.0"

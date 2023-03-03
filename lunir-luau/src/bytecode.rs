@@ -1,9 +1,21 @@
+use derive_builder::Builder;
+use lunir::il::{Constant, Vararg};
 use num_enum::TryFromPrimitive;
-use lunir::il::Constant;
+use std::rc::Rc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Builder)]
 pub struct LuauChunk {
+    line_info: Vec<usize>,
+    functions: Vec<Rc<LuauChunk>>,
+    constants: Vec<Constant>,
+    instructions: Vec<Instruction>,
 
+    name: Option<String>,
+    is_vararg: Vararg,
+
+    nups: u8,
+    num_params: u8,
+    max_stack_size: u8,
 }
 
 #[derive(Debug, PartialEq, TryFromPrimitive)]
@@ -125,7 +137,8 @@ pub enum OpCode {
     DeprecatedJumpIfConstantNotEqual = 71,
 }
 
-pub(crate) struct Instruction(u32);
+#[derive(Debug, Clone)]
+pub struct Instruction(pub u32);
 
 impl Instruction {
     #[must_use = "The error case of the opcode must be handled as it may be invalid."]
