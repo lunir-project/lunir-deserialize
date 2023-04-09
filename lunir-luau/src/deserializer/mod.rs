@@ -3,7 +3,7 @@ use std::{collections::HashMap, ops::Index};
 
 use lunir::prelude::{Constant, Value, Vararg};
 
-use crate::bytecode::{Instruction, LuauChunk, LuauChunkBuilder};
+use crate::bytecode::{self, Instruction, LuauChunk, LuauChunkBuilder};
 
 struct Deserializer<T: AsRef<[u8]>> {
     buffer: T,
@@ -205,12 +205,36 @@ impl<T: AsRef<[u8]>> Deserializer<T> {
             for _ in 0..size {
                 lineinfo.push(self.next::<u32>() as usize);
             }
+
+            result.line_info(Some(lineinfo));
+        } else {
+            result.line_info(None);
         }
 
-        // skip debug info for now.
         let debug_enabled = self.next::<bool>();
         if debug_enabled {
-            todo!("deserialize debugging information");
+            let num_locals = self.read_compressed_int();
+            let mut locvars = Vec::with_capacity(num_locals);
+
+            for _ in 0..num_locals {
+                locvars.push(
+                    bytecode::LocVarBuilder::default()
+                        .name(self.read_string())
+                        .start(self.read_compressed_int())
+                        .end(self.read_compressed_int())
+                        .reg(self.next::<u8>())
+                        .build()
+                        .expect("couldn't build local signature"),
+                )
+            }
+
+            let upvalues = (0..self.read_compressed_int())
+                .map(|_| self.read_string())
+                .collect();
+
+            result.debug_info(Some(bytecode::DebugInfo { locvars, upvalues }));
+        } else {
+            result.debug_info(None);
         }
 
         Rc::new(result.build().unwrap())

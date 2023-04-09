@@ -3,12 +3,28 @@ use lunir::il::{Constant, Vararg};
 use num_enum::TryFromPrimitive;
 use std::rc::Rc;
 
+#[derive(Debug, PartialEq, Clone, Builder)]
+pub struct LocVar {
+    pub start: usize,
+    pub end: usize,
+    pub reg: usize,
+    pub name: String,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct DebugInfo {
+    pub locvars: Vec<LocVar>,
+    pub upvalues: Vec<String>,
+}
+
 #[derive(Debug, Clone, Builder)]
 pub struct LuauChunk {
-    line_info: Vec<usize>,
+    line_info: Option<Vec<usize>>,
     functions: Vec<Rc<LuauChunk>>,
     constants: Vec<Constant>,
     instructions: Vec<Instruction>,
+
+    debug_info: Option<DebugInfo>,
 
     name: Option<String>,
     is_vararg: Vararg,
